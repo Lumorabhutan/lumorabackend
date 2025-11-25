@@ -89,6 +89,6 @@ router.get("/blogs/search", blogsController.searchBlogs);
 router.delete("/blogs/:id",VERIFY_TOKEN, blogsController.deleteBlog);
 router.post("/blogs/:id/publish",VERIFY_TOKEN, blogsController.publishBlog);
 
-// router.get("/countries", blogsController.getCountries);
+router.get("/countries", blogsController.getCountries);
 
 export default router;

@@ -252,6 +252,24 @@ async getAllBlogs(req: Request, res: Response) {
       return res.status(500).json({ success: false, message: "Failed to unpublish", error: error.message });
     }
   }
+async getCountries(req: Request, res: Response): Promise<any> {
+  try {
+    const response = await fetch("https://www.apicountries.com/countries");
+
+    // Convert body to JSON
+    const data = await response.json();
+
+    return res.status(200).json(data);
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch countries",
+      error: error instanceof Error ? error.message : error
+    });
+  }
+}
+
 }
 
 export default new BlogController();
