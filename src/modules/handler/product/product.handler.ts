@@ -11,12 +11,7 @@ const bookingRepo = new BookingRepository()
 class ProductHandler {
     async CreateOrder(customer: Customer, item: Item[], total: number, subtotal: number): Promise<any> {
         try {
-            // Check if the user has already booked this tour
-            const hasBooked = await bookingRepo.findByEmail(customer.email);
-            if (!hasBooked) {
-                throw new Error("User has not booked any tours yet. You can book a tour first before placing an order.");
-            }
-
+       
             // Create order
             const response = await productRepo.orderProduct(customer, item, total, subtotal);
             if (!response) {

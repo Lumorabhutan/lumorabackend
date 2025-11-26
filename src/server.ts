@@ -6,13 +6,14 @@ import cookieParser from "cookie-parser";
 
 dotenv.config();
 import path from "path";
+const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
 
 const app: Application = express();
 
 // ✅ Dynamic CORS configuration for hotspot/local network testing
 const corsOptions: CorsOptions = {
 
-  origin: "http://localhost:3000", // frontend origin
+  origin: allowedOrigin, // frontend origin
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
 };
@@ -31,3 +32,6 @@ const PORT = process.env.PORT || 3001;
 app.listen(Number(PORT), () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+
+export default app;

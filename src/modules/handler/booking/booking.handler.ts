@@ -51,7 +51,6 @@ export default class BookingHandler {
         <li>End Date: ${bookingData.travelEndDate}</li>
         <li>Status: ${bookingData.status}</li>
         <li>Travelers: ${bookingData.numTravelers}</li>
-        <li>Total Amount: ${bookingData.totalAmount}</li>
       </ul>
       <p>Remarks: ${bookingData.remarks ?? "None"}</p>
       <p>Thank you for booking with us.</p>
