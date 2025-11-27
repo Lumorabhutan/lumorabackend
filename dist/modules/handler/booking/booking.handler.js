@@ -26,8 +26,8 @@ class BookingHandler {
       <p>Thank you for booking with us.</p>
     `;
         // send email; rethrow if fails or handle as needed
-        await mailService.sendMail("bookings@travelagent.com", bookingData?.email, subject, html);
-        return booking;
+        await mailService.sendMail("info@lumorabhutan.com", bookingData?.email, subject, html);
+        await mailService.sendMail(bookingData?.email, "info@lumorabhutan.com", subject, html);
         return booking;
     }
     async getBookingById(bookingId) {

@@ -24,6 +24,13 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
 app.use("/api/v1", auth_routes_1.default);
+app.get("/health", (req, res) => {
+    return res.status(200).json({
+        status: "OK",
+        message: "Backend is running successfully!",
+        time: new Date().toISOString(),
+    });
+});
 // ✅ Use 0.0.0.0 so it’s accessible from other laptops via hotspot IP
 const PORT = process.env.PORT || 3001;
 app.listen(Number(PORT), () => {
