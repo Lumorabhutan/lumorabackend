@@ -1,0 +1,28 @@
+step "build-start-backend" {
+    name = "Build & Start Backend"
+
+    action {
+        action_type = "Octopus.Script"
+        properties = {
+            Octopus.Action.ExecutionTimeout.Minutes = "15"
+            Octopus.Action.Script.ScriptBody = <<-EOT
+                # Navigate to backend folder if in monorepo
+                cd backend || echo "Already in backend"
+                
+                # Install dependencies
+                npm install
+                
+                # Build project
+                npm run build
+                
+                # Start application (for production use PM2 if installed)
+                npm run start:prod
+                
+                EOT
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Script.Syntax = "PowerShell"
+            OctopusUseBundledTooling = "False"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
