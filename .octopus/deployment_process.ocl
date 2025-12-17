@@ -1,29 +1,12 @@
-step "build-start-backend" {
-    name = "Build & Start Backend"
+step "deploy-a-release" {
+    name = "Deploy a Release"
 
     action {
-        action_type = "Octopus.Script"
+        action_type = "Octopus.DeployRelease"
         properties = {
-            Octopus.Action.EnabledFeatures = "Octopus.Features.SelectPowerShellEditionForWindows"
-            Octopus.Action.ExecutionTimeout.Minutes = "15"
-            Octopus.Action.PowerShell.Edition = "Desktop"
-            Octopus.Action.Script.ScriptBody = <<-EOT
-                # Navigate to backend folder if in monorepo
-                
-                # Install dependencies
-                npm install
-                
-                # Build project
-                npm run build
-                
-                # Start application (for production use PM2 if installed)
-                npm run start:prod
-                
-                EOT
-            Octopus.Action.Script.ScriptSource = "Inline"
-            Octopus.Action.Script.Syntax = "PowerShell"
-            OctopusUseBundledTooling = "False"
+            Octopus.Action.DeployRelease.DeploymentCondition = "Always"
+            Octopus.Action.DeployRelease.ProjectId = "lumorbhutan"
+            Octopus.Action.DeployRelease.Variables = "{}"
         }
-        worker_pool = "hosted-ubuntu"
     }
 }
