@@ -4,10 +4,11 @@ step "build-start-backend" {
     action {
         action_type = "Octopus.Script"
         properties = {
+            Octopus.Action.EnabledFeatures = "Octopus.Features.SelectPowerShellEditionForWindows"
             Octopus.Action.ExecutionTimeout.Minutes = "15"
+            Octopus.Action.PowerShell.Edition = "Desktop"
             Octopus.Action.Script.ScriptBody = <<-EOT
                 # Navigate to backend folder if in monorepo
-                cd backend || echo "Already in backend"
                 
                 # Install dependencies
                 npm install
