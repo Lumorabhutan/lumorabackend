@@ -32,7 +32,7 @@ app.get("/health", (req, res) => {
     });
 });
 // ✅ Use 0.0.0.0 so it’s accessible from other laptops via hotspot IP
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PGPORT || 3001;
 app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
