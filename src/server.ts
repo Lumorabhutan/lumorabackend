@@ -10,24 +10,29 @@ dotenv.config();
 const app: Application = express();
 
 // ========================
-// CORS Configuration (Same as before — perfect)
+// CORS Configuration (FIXED - Secure Setup)
 // ========================
 
 const allowedOrigins = [
-  "*",
-  
+  "https://travel-agent-olive.vercel.app",  // Your Vercel frontend
+  "https://www.lumorabhutan.com",           // Production domain
+  "https://lumorabhutan.com",               // Without www
+  "http://localhost:3000",                  // Local development
+  // Add preview URLs if needed, e.g.:
+  // "https://travel-agent-olive-git-main-yourusername.vercel.app"
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
+    // Allow non-browser requests (Postman, mobile apps, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("Blocked by CORS:", origin);
+      console.warn("Blocked by CORS:", origin); // Log for debugging
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
+  credentials: true, // Safe with specific origins
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
 };
@@ -38,6 +43,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+// Routes
 app.use("/api/v1", router);
 
 app.get("/health", (req: Request, res: Response) => {
@@ -49,10 +55,10 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 // ========================
-// FOR RAILWAY: Add app.listen()
+// FOR RAILWAY (or similar hosts)
 // ========================
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT
 
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
