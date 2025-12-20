@@ -57,19 +57,20 @@ export const UserController = {
 
       // loginUser returns { accessToken, refreshToken }
       const token = await userService.loginUser(email, password);
-
+       const isProd = process.env.NODE_ENV === "production";
       // Set cookies (HTTP Only, secure in production)
       res.cookie("accessToken", token.accessToken, {
-        httpOnly: false,      // cannot be accessed by JS
-        secure: process.env.NODE_ENV === "production" ? false : true, // only HTTPS in prod
-        sameSite: "strict",
+        httpOnly: true,      // cannot be accessed by JS
+        secure: isProd, // only HTTPS in prod
+        sameSite: isProd ? "none" : "lax", // CSRF protection
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         path: "/",           // cookie accessible on all routes
       });
 
       res.cookie("refreshToken", token.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        httpOnly: true,      // cannot be accessed by JS
+        secure: isProd, // only HTTPS in prod
+        sameSite: isProd ? "none" : "lax", // CSRF protection
         // sameSite: "Strict",
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         path: "/",

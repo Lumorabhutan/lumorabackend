@@ -42,7 +42,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-
+app.set("trust proxy", 1); // Trust first proxy (needed for secure cookies behind proxies)
 // Routes
 app.use("/api/v1", router);
 
