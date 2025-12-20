@@ -13,7 +13,6 @@ const forgetpssword_controller_1 = require("../modules/controller/forgetpassword
 const product_controller_1 = __importDefault(require("../modules/controller/product/product.controller"));
 const blogs_controller_1 = require("../modules/controller/blogs/blogs.controller");
 const user_controller_1 = require("../modules/controller/user/user.controller");
-const blogs_1 = require("../middleware/blogs");
 const router = (0, express_1.Router)();
 const bookingController = new booking_controller_1.default();
 const contactController = new contactus_controller_1.default();
@@ -65,8 +64,8 @@ router.post("/orders", productController.createOrder.bind(productController));
 router.get("/orders", productController.getOrders.bind(productController)); // GET all orders
 router.put("/orders/:id", productController.updateOrder.bind(productController)); // GET order by ID
 //blogs
-router.post("/blogs", blogs_1.blogsupload.any(), blogsController.createBlog);
-router.put("/blogs/:id", blogs_1.blogsupload.any(), blogsController.updateBlog);
+router.post("/blogs", blogs_controller_1.BlogController.upload, blogsController.createBlog);
+router.put("/blogs/:id", blogs_controller_1.BlogController.upload, blogsController.updateBlog);
 // Read
 router.get("/blogs", blogsController.getAllBlogs);
 router.get("/blogs/:id", blogsController.getBlogById);

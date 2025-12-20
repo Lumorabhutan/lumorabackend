@@ -1,18 +1,14 @@
 import { Request, Response } from "express";
 import BlogRepository from "../../repository/blogs/blogs.repository";
-import path from "path";
-import fs from "fs";
+import cloudinary from "cloudinary"; // ← for optional deletion
+import { tripupload } from "../../../middleware/tripupload";
 
 const blogRepo = new BlogRepository();
 
-// AUTO-CREATE UPLOAD DIRECTORY (Fixes ENOENT forever)
-const uploadDir = path.join(process.cwd(), "uploads", "blogs");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-  console.log("Created upload directory:", uploadDir);
-}
-
 export class BlogController {
+  // Expose the middleware for routes
+  static upload = tripupload.array("images"); // or use .fields() if you want stricter control
+
   async createBlog(req: Request, res: Response) {
     try {
       const { category, is_published, published_at } = req.body;
@@ -24,14 +20,15 @@ export class BlogController {
 
       console.log("Uploaded files:", uploadedFiles?.map(f => f.originalname));
 
-      // Map images to correct items
+      // Map images to correct items (unchanged logic)
       items = items.map((item: any, index: number) => {
         const itemFiles = uploadedFiles?.filter((file) => {
           const match = file.fieldname.match(/items\[(\d+)\]\[images\]\[\]/);
           return match && parseInt(match[1]) === index;
         });
 
-        const imageUrls = itemFiles?.map(file => `/uploads/blogs/${file.filename}`) || [];
+        // Use Cloudinary secure_url (file.path)
+        const imageUrls = itemFiles?.map(file => file.path) || [];
 
         return { ...item, images: imageUrls };
       });
@@ -77,7 +74,7 @@ export class BlogController {
             return match && parseInt(match[1]) === index;
           });
 
-          const newImageUrls = itemFiles.map(file => `/uploads/blogs/${file.filename}`);
+          const newImageUrls = itemFiles.map(file => file.path); // Cloudinary secure_url
 
           return {
             ...item,
@@ -117,101 +114,122 @@ export class BlogController {
   async deleteBlog(req: Request, res: Response) {
     try {
       const { id } = req.params;
+
+      // Optional: Fetch blog to delete images from Cloudinary
+      const blog = await blogRepo.getBlogById(Number(id));
+      if (blog) {
+        // Collect all public_ids from all items
+        const publicIds: string[] = [];
+        blog.items?.forEach((item: any) => {
+          if (Array.isArray(item.images)) {
+            item.images.forEach((url: string) => {
+              // Extract public_id from Cloudinary URL
+              const parts = url.split('/');
+              const fileWithExt = parts.pop();
+              const publicIdWithExt = fileWithExt?.split('.')[0];
+              if (publicIdWithExt) publicIds.push(publicIdWithExt);
+            });
+          }
+        });
+
+        // Delete from Cloudinary (optional - uncomment if needed)
+        // if (publicIds.length > 0) {
+        //   await cloudinary.api.delete_resources(publicIds, { resource_type: 'image' });
+        // }
+      }
+
       const deleted = await blogRepo.deleteBlog(Number(id));
       if (!deleted) return res.status(404).json({ success: false, message: "Blog not found" });
+
       return res.status(200).json({ success: true, message: "Blog deleted successfully" });
     } catch (error: any) {
       return res.status(500).json({ success: false, message: "Failed to delete blog", error: error.message });
     }
   }
 
-async getAllBlogs(req: Request, res: Response) {
-  try {
-    const { category, is_published, id } = req.query;
-    const filters: any = {};
-    if (category) filters.category = category;
-    if (is_published !== undefined) filters.is_published = is_published === "true";
-    if (id) filters.id = Number(id);
+  async getAllBlogs(req: Request, res: Response) {
+    try {
+      const { category, is_published, id } = req.query;
+      const filters: any = {};
+      if (category) filters.category = category;
+      if (is_published !== undefined) filters.is_published = is_published === "true";
+      if (id) filters.id = Number(id);
 
-    const blogs = await blogRepo.getAllBlogs(filters);
+      const blogs = await blogRepo.getAllBlogs(filters);
 
-    // Convert to plain objects
-    const plainBlogs = blogs.map(blog => blog.get({ plain: true }));
+      // Convert to plain objects
+      const plainBlogs = blogs.map(blog => blog.get({ plain: true }));
 
-    const host = `${req.protocol}://${req.get("host")}`;
+      const host = `${req.protocol}://${req.get("host")}`;
 
-    const withFullUrls = plainBlogs.map((blog: any) => {
-      if (blog.items && Array.isArray(blog.items)) {
-        blog.items = blog.items.map((item: any) => {
-          // FIX THE MAIN BUG: Clean invalid images
-          let cleanImages: string[] = [];
+      const withFullUrls = plainBlogs.map((blog: any) => {
+        if (blog.items && Array.isArray(blog.items)) {
+          blog.items = blog.items.map((item: any) => {
+            let cleanImages: string[] = [];
 
-          if (Array.isArray(item.images)) {
-            cleanImages = item.images
-              .filter((img: any) => {
-                return typeof img === "string" && img.trim() !== "";
-              })
-              .map((img: string) =>
-                img.startsWith("http") ? img : `${host}${img}`
-              );
-          }
+            if (Array.isArray(item.images)) {
+              cleanImages = item.images
+                .filter((img: any) => typeof img === "string" && img.trim() !== "")
+                .map((img: string) => img.startsWith("http") ? img : `${host}${img}`);
+            }
 
-          return {
-            ...item,
-            images: cleanImages, // ← Now always clean array of strings
-          };
-        });
-      }
-      return blog;
-    });
+            return {
+              ...item,
+              images: cleanImages,
+            };
+          });
+        }
+        return blog;
+      });
 
-    return res.status(200).json({
-      success: true,
-      message: "List successfully",
-      data: withFullUrls, // ← You wanted "blogs" key
-    });
-  } catch (error: any) {
-    console.error("Error in getAllBlogs:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch blogs",
-      error: error.message || "Internal server error",
-    });
+      return res.status(200).json({
+        success: true,
+        message: "List successfully",
+        data: withFullUrls,
+      });
+    } catch (error: any) {
+      console.error("Error in getAllBlogs:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch blogs",
+        error: error.message || "Internal server error",
+      });
+    }
   }
-}
+
   async getBlogById(req: Request, res: Response) {
     try {
       const blog = await blogRepo.getBlogById(Number(req.params.id));
       if (!blog) return res.status(404).json({ success: false, message: "Blog not found" });
 
-       const plainBlogs = [blog].map(blog => blog.get({ plain: true }));
+      const plainBlogs = [blog].map(blog => blog.get({ plain: true }));
 
-    const host = `${req.protocol}://${req.get("host")}`;
+      const host = `${req.protocol}://${req.get("host")}`;
 
-    const withFullUrls = plainBlogs.map((blog: any) => {
-      if (blog.items && Array.isArray(blog.items)) {
-        blog.items = blog.items.map((item: any) => {
-          // FIX THE MAIN BUG: Clean invalid images
-          let cleanImages: string[] = [];
+      const withFullUrls = plainBlogs.map((blog: any) => {
+        if (blog.items && Array.isArray(blog.items)) {
+          blog.items = blog.items.map((item: any) => {
+            // FIX THE MAIN BUG: Clean invalid images
+            let cleanImages: string[] = [];
 
-          if (Array.isArray(item.images)) {
-            cleanImages = item.images
-              .filter((img: any) => {
-                return typeof img === "string" && img.trim() !== "";
-              })
-              .map((img: string) =>
-                img.startsWith("http") ? img : `${host}${img}`
-              );
-          }
+            if (Array.isArray(item.images)) {
+              cleanImages = item.images
+                .filter((img: any) => {
+                  return typeof img === "string" && img.trim() !== "";
+                })
+                .map((img: string) =>
+                  img.startsWith("http") ? img : `${host}${img}`
+                );
+            }
 
-          return {
-            ...item,
-            images: cleanImages, // ← Now always clean array of strings
-          };
-        });
-      }
-      return blog;
-    });
+            return {
+              ...item,
+              images: cleanImages, // ← Now always clean array of strings
+            };
+          });
+        }
+        return blog;
+      });
 
       return res.status(200).json({ success: true, data: withFullUrls });
     } catch (error: any) {
@@ -252,23 +270,23 @@ async getAllBlogs(req: Request, res: Response) {
       return res.status(500).json({ success: false, message: "Failed to unpublish", error: error.message });
     }
   }
-async getCountries(req: Request, res: Response): Promise<any> {
-  try {
-    const response = await fetch("https://www.apicountries.com/countries");
+  async getCountries(req: Request, res: Response): Promise<any> {
+    try {
+      const response = await fetch("https://www.apicountries.com/countries");
 
-    // Convert body to JSON
-    const data = await response.json();
+      // Convert body to JSON
+      const data = await response.json();
 
-    return res.status(200).json(data);
+      return res.status(200).json(data);
 
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch countries",
-      error: error instanceof Error ? error.message : error
-    });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch countries",
+        error: error instanceof Error ? error.message : error
+      });
+    }
   }
-}
 
 }
 

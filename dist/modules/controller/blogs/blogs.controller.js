@@ -5,16 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlogController = void 0;
 const blogs_repository_1 = __importDefault(require("../../repository/blogs/blogs.repository"));
-const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
+const tripupload_1 = require("../../../middleware/tripupload");
 const blogRepo = new blogs_repository_1.default();
-// AUTO-CREATE UPLOAD DIRECTORY (Fixes ENOENT forever)
-const uploadDir = path_1.default.join(process.cwd(), "uploads", "blogs");
-if (!fs_1.default.existsSync(uploadDir)) {
-    fs_1.default.mkdirSync(uploadDir, { recursive: true });
-    console.log("Created upload directory:", uploadDir);
-}
 class BlogController {
+    // Expose the middleware for routes
+    static upload = tripupload_1.tripupload.array("images"); // or use .fields() if you want stricter control
     async createBlog(req, res) {
         try {
             const { category, is_published, published_at } = req.body;
@@ -22,13 +17,14 @@ class BlogController {
             let items = typeof req.body.items === "string" ? JSON.parse(req.body.items) : req.body.items || [];
             const uploadedFiles = req.files;
             console.log("Uploaded files:", uploadedFiles?.map(f => f.originalname));
-            // Map images to correct items
+            // Map images to correct items (unchanged logic)
             items = items.map((item, index) => {
                 const itemFiles = uploadedFiles?.filter((file) => {
                     const match = file.fieldname.match(/items\[(\d+)\]\[images\]\[\]/);
                     return match && parseInt(match[1]) === index;
                 });
-                const imageUrls = itemFiles?.map(file => `/uploads/blogs/${file.filename}`) || [];
+                // Use Cloudinary secure_url (file.path)
+                const imageUrls = itemFiles?.map(file => file.path) || [];
                 return { ...item, images: imageUrls };
             });
             const blogData = {
@@ -66,7 +62,7 @@ class BlogController {
                         const match = file.fieldname.match(/items\[(\d+)\]\[images\]\[\]/);
                         return match && parseInt(match[1]) === index;
                     });
-                    const newImageUrls = itemFiles.map(file => `/uploads/blogs/${file.filename}`);
+                    const newImageUrls = itemFiles.map(file => file.path); // Cloudinary secure_url
                     return {
                         ...item,
                         images: newImageUrls.length > 0 ? newImageUrls : item.images || [],
@@ -101,6 +97,28 @@ class BlogController {
     async deleteBlog(req, res) {
         try {
             const { id } = req.params;
+            // Optional: Fetch blog to delete images from Cloudinary
+            const blog = await blogRepo.getBlogById(Number(id));
+            if (blog) {
+                // Collect all public_ids from all items
+                const publicIds = [];
+                blog.items?.forEach((item) => {
+                    if (Array.isArray(item.images)) {
+                        item.images.forEach((url) => {
+                            // Extract public_id from Cloudinary URL
+                            const parts = url.split('/');
+                            const fileWithExt = parts.pop();
+                            const publicIdWithExt = fileWithExt?.split('.')[0];
+                            if (publicIdWithExt)
+                                publicIds.push(publicIdWithExt);
+                        });
+                    }
+                });
+                // Delete from Cloudinary (optional - uncomment if needed)
+                // if (publicIds.length > 0) {
+                //   await cloudinary.api.delete_resources(publicIds, { resource_type: 'image' });
+                // }
+            }
             const deleted = await blogRepo.deleteBlog(Number(id));
             if (!deleted)
                 return res.status(404).json({ success: false, message: "Blog not found" });
@@ -127,18 +145,15 @@ class BlogController {
             const withFullUrls = plainBlogs.map((blog) => {
                 if (blog.items && Array.isArray(blog.items)) {
                     blog.items = blog.items.map((item) => {
-                        // FIX THE MAIN BUG: Clean invalid images
                         let cleanImages = [];
                         if (Array.isArray(item.images)) {
                             cleanImages = item.images
-                                .filter((img) => {
-                                return typeof img === "string" && img.trim() !== "";
-                            })
+                                .filter((img) => typeof img === "string" && img.trim() !== "")
                                 .map((img) => img.startsWith("http") ? img : `${host}${img}`);
                         }
                         return {
                             ...item,
-                            images: cleanImages, // ← Now always clean array of strings
+                            images: cleanImages,
                         };
                     });
                 }
@@ -147,7 +162,7 @@ class BlogController {
             return res.status(200).json({
                 success: true,
                 message: "List successfully",
-                data: withFullUrls, // ← You wanted "blogs" key
+                data: withFullUrls,
             });
         }
         catch (error) {

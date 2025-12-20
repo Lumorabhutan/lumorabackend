@@ -77,8 +77,8 @@ router.post("/orders", productController.createOrder.bind(productController));
 router.get("/orders", productController.getOrders.bind(productController)); // GET all orders
 router.put("/orders/:id", productController.updateOrder.bind(productController)); // GET order by ID
 //blogs
-router.post("/blogs", blogsupload.any(), blogsController.createBlog);
-router.put("/blogs/:id", blogsupload.any(), blogsController.updateBlog);
+router.post("/blogs",   BlogController.upload,  blogsController.createBlog);
+router.put("/blogs/:id", BlogController.upload, blogsController.updateBlog);
 
 // Read
 router.get("/blogs", blogsController.getAllBlogs);
