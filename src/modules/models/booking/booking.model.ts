@@ -25,25 +25,25 @@ interface BookingAttributes {
 interface BookingCreationAttributes extends Optional<BookingAttributes, "id"> { }
 
 export class Booking extends Model<BookingAttributes, BookingCreationAttributes> implements BookingAttributes {
-     id!: number;
-     bookingDate!: Date;
-     travelStartDate!: Date;
-     travelEndDate!: Date;
-     country!: string;
-     email!: string;
-     name!: string;
-     numTravelers!: number;
-     totalAmount!: number;
-     status!: string;
-     adultNum!: number;
-     childNum!: number;
-     paymentStatus!: string;
-     travelType!: string;
-     mobileNo!: string;
-     specialRequest?: string;
-     remarks?: string;
-        readonly createdAt!: Date;
-        readonly updatedAt!: Date;
+    id!: number;
+    bookingDate!: Date;
+    travelStartDate!: Date;
+    travelEndDate!: Date;
+    country!: string;
+    email!: string;
+    name!: string;
+    numTravelers!: number;
+    totalAmount!: number;
+    status!: string;
+    adultNum!: number;
+    childNum!: number;
+    paymentStatus!: string;
+    travelType!: string;
+    mobileNo!: string;
+    specialRequest?: string;
+    remarks?: string;
+    readonly createdAt!: Date;
+    readonly updatedAt!: Date;
 }
 
 Booking.init(
@@ -102,7 +102,7 @@ Booking.init(
             type: DataTypes.STRING,
             defaultValue: "pending",
         },
-        travelType:{
+        travelType: {
             type: DataTypes.STRING,
             allowNull: false,
         },
@@ -123,7 +123,7 @@ Booking.init(
         sequelize,
         tableName: "bookings",
         timestamps: false,
-        underscored: true,  // ← Add this line
+        underscored: false,  // ← Add this line
     }
 );
 

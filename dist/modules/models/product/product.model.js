@@ -59,6 +59,7 @@ Product.init({
     sequelize: db_1.default,
     tableName: "products",
     timestamps: false,
+    underscored: false, // ← Add this line
 });
 exports.default = Product;
 //# sourceMappingURL=product.model.js.map

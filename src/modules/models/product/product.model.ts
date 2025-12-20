@@ -77,7 +77,8 @@ Product.init(
     sequelize,
     tableName: "products",
     timestamps: false,
-  
+      underscored: false,  // ← Add this line
+
   }
 );
 

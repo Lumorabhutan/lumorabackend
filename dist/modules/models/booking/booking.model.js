@@ -103,7 +103,7 @@ Booking.init({
     sequelize: db_1.default,
     tableName: "bookings",
     timestamps: false,
-    underscored: true, // ← Add this line
+    underscored: false, // ← Add this line
 });
 // Relationships
 // Booking.belongsTo(User, { foreignKey: "userId", as: "user" });
