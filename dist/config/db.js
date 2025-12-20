@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const databaseUrl = process.env.DATABASE_PUBLIC_URL;
+const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
     throw new Error('DATABASE_URL is missing. Make sure your Postgres plugin is in the same project and deployed.');
 }
