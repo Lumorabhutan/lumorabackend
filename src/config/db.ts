@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// db.ts or sequelize.ts
+
+
+dotenv.config();
+
 const databaseUrl = process.env.DATABASE_PUBLIC_URL;
 
 if (!databaseUrl) {
@@ -18,11 +23,17 @@ const sequelize = new Sequelize(databaseUrl, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false, // Required for Railway
+      rejectUnauthorized: false,
     },
   },
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  },
   define: {
-    underscored: true,     // Fixes column case issues
+    underscored: true,
     timestamps: true,
   },
 });
@@ -37,6 +48,7 @@ async function testConnection() {
     return false;
   }
 }
+
 testConnection();
 
 export default sequelize;
