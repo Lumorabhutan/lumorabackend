@@ -27,4 +27,16 @@ const sequelize = new Sequelize(databaseUrl, {
   },
 });
 
+async function testConnection() {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Database connection established successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Unable to connect to database:', error);
+    return false;
+  }
+}
+testConnection();
+
 export default sequelize;

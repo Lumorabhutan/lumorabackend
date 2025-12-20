@@ -32,6 +32,7 @@ app.get("/health", (req: Request, res: Response) => {
     time: new Date().toISOString(),
   });
 });
+
 // ✅ Use 0.0.0.0 so it’s accessible from other laptops via hotspot IP
 const PORT = process.env.PORT;
 
