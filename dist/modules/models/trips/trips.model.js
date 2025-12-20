@@ -72,6 +72,7 @@ Trip.init({
     tableName: "Trips",
     modelName: "Trips",
     timestamps: false,
+    underscored: true, // ← Add this line
 });
 exports.default = Trip;
 //# sourceMappingURL=trips.model.js.map

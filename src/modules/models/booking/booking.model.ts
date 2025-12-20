@@ -123,6 +123,7 @@ Booking.init(
         sequelize,
         tableName: "bookings",
         timestamps: false,
+        underscored: true,  // ← Add this line
     }
 );
 

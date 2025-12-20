@@ -92,6 +92,7 @@ Trip.init(
     tableName: "Trips",
     modelName: "Trips",
     timestamps: false,
+    underscored: true,  // ← Add this line
   }
 );
 

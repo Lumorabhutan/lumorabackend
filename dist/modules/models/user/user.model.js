@@ -37,6 +37,7 @@ User.init({
     tableName: "Users",
     modelName: "User",
     timestamps: false,
+    underscored: true, // ← Add this line
 });
 exports.default = User;
 //# sourceMappingURL=user.model.js.map
