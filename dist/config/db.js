@@ -7,7 +7,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const databaseUrl = process.env.DATABASE_PUBLIC_URL;
+// db.ts or sequelize.ts
+dotenv_1.default.config();
+const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
     throw new Error('DATABASE_URL is missing. Make sure your Postgres plugin is in the same project and deployed.');
 }
@@ -17,11 +19,17 @@ const sequelize = new sequelize_1.Sequelize(databaseUrl, {
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false, // Required for Railway
+            rejectUnauthorized: false,
         },
     },
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+    },
     define: {
-        underscored: true, // Fixes column case issues
+        underscored: true,
         timestamps: true,
     },
 });
