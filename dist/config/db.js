@@ -16,12 +16,6 @@ if (!databaseUrl) {
 const sequelize = new sequelize_1.Sequelize(databaseUrl, {
     dialect: "postgres",
     logging: false,
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false
-        }
-    },
     pool: {
         max: 5,
         min: 0,
