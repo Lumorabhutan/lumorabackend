@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import UserService from "../../handler/user/user.handler";
+import { access } from "fs";
 
 const userService = new UserService();
 
@@ -77,7 +78,7 @@ export const UserController = {
       });
 
       // Respond with minimal info (you could also skip sending tokens in body)
-      res.status(200).json({ success: true, message: "Login successful" });
+      res.status(200).json({ success: true, message: "Login successful", accessToken: token.accessToken, refreshToken: token.refreshToken });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
     }

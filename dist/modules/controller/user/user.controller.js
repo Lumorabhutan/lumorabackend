@@ -78,7 +78,7 @@ exports.UserController = {
                 path: "/",
             });
             // Respond with minimal info (you could also skip sending tokens in body)
-            res.status(200).json({ success: true, message: "Login successful" });
+            res.status(200).json({ success: true, message: "Login successful", accessToken: token.accessToken, refreshToken: token.refreshToken });
         }
         catch (error) {
             res.status(400).json({ success: false, error: error.message });
