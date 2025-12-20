@@ -5,28 +5,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogsupload = void 0;
 const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
-const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/blogs/");
-    },
-    filename: (req, file, cb) => {
-        const unique = Date.now() + "-" + Math.round(Math.random() * 1E9);
-        cb(null, unique + "-" + file.originalname);
+const cloudinary_1 = require("cloudinary");
+const multer_storage_cloudinary_1 = require("multer-storage-cloudinary");
+/**
+ * Configure Cloudinary
+ */
+cloudinary_1.v2.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+/**
+ * Multer storage configuration for blogs (using Cloudinary)
+ */
+const storage = new multer_storage_cloudinary_1.CloudinaryStorage({
+    cloudinary: cloudinary_1.v2,
+    params: {
+        folder: "blogs",
+        allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+        transformation: [{ width: 2000, height: 2000, crop: "limit" }],
     },
 });
+/**
+ * File filter: only allow certain image types
+ */
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    }
+    else {
+        cb(new Error("Only JPEG, PNG, GIF, and WEBP image files are allowed!"));
+    }
+};
+/**
+ * Multer upload middleware for blogs
+ * - Limits: 10MB per file
+ */
 exports.blogsupload = (0, multer_1.default)({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    fileFilter: (req, file, cb) => {
-        const allowed = /jpeg|jpg|png|gif|webp/;
-        const ext = path_1.default.extname(file.originalname).toLowerCase();
-        if (allowed.test(ext) && allowed.test(file.mimetype)) {
-            cb(null, true);
-        }
-        else {
-            cb(new Error("Only images allowed"));
-        }
-    },
+    fileFilter,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
 });
 //# sourceMappingURL=blogs.js.map

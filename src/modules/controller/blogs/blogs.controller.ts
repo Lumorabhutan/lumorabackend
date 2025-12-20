@@ -1,34 +1,32 @@
 import { Request, Response } from "express";
 import BlogRepository from "../../repository/blogs/blogs.repository";
-import cloudinary from "cloudinary"; // ← for optional deletion
-import { tripupload } from "../../../middleware/tripupload";
 
 const blogRepo = new BlogRepository();
 
 export class BlogController {
-  // Expose the middleware for routes
-  static upload = tripupload.array("images"); // or use .fields() if you want stricter control
-
   async createBlog(req: Request, res: Response) {
     try {
       const { category, is_published, published_at } = req.body;
 
-      // Parse items if sent as string
-      let items = typeof req.body.items === "string" ? JSON.parse(req.body.items) : req.body.items || [];
+      let items = typeof req.body.items === "string" 
+        ? JSON.parse(req.body.items) 
+        : req.body.items || [];
 
       const uploadedFiles = req.files as Express.Multer.File[];
 
-      console.log("Uploaded files:", uploadedFiles?.map(f => f.originalname));
+      console.log("📤 Files uploaded to Cloudinary:", uploadedFiles?.map(f => f.originalname));
 
-      // Map images to correct items (unchanged logic)
+      // Map Cloudinary URLs to items
       items = items.map((item: any, index: number) => {
         const itemFiles = uploadedFiles?.filter((file) => {
           const match = file.fieldname.match(/items\[(\d+)\]\[images\]\[\]/);
           return match && parseInt(match[1]) === index;
         });
 
-        // Use Cloudinary secure_url (file.path)
-        const imageUrls = itemFiles?.map(file => file.path) || [];
+        // CloudinaryStorage already uploaded - just get the URLs
+        const imageUrls = itemFiles?.map(file => (file as any).path) || [];
+
+        console.log(`📸 Item ${index}: ${imageUrls.length} images from Cloudinary`);
 
         return { ...item, images: imageUrls };
       });
@@ -44,7 +42,7 @@ export class BlogController {
 
       return res.status(201).json({
         success: true,
-        message: "Blog created successfully",
+        message: "Blog created successfully with Cloudinary images",
         data: blog,
       });
     } catch (error: any) {
@@ -62,10 +60,13 @@ export class BlogController {
       const { id } = req.params;
       const { category, is_published, published_at } = req.body;
 
-      let items = typeof req.body.items === "string" ? JSON.parse(req.body.items) : req.body.items || [];
+      let items = typeof req.body.items === "string" 
+        ? JSON.parse(req.body.items) 
+        : req.body.items || [];
+
       const uploadedFiles = req.files as Express.Multer.File[];
 
-      console.log("Update - Uploaded files:", uploadedFiles?.map(f => f.originalname));
+      console.log("📤 Update - Files uploaded to Cloudinary:", uploadedFiles?.map(f => f.originalname));
 
       if (uploadedFiles && uploadedFiles.length > 0) {
         items = items.map((item: any, index: number) => {
@@ -74,7 +75,10 @@ export class BlogController {
             return match && parseInt(match[1]) === index;
           });
 
-          const newImageUrls = itemFiles.map(file => file.path); // Cloudinary secure_url
+          // CloudinaryStorage already uploaded - just get the URLs
+          const newImageUrls = itemFiles.map(file => (file as any).path);
+
+          console.log(`📸 Item ${index}: ${newImageUrls.length} new images from Cloudinary`);
 
           return {
             ...item,
@@ -98,7 +102,7 @@ export class BlogController {
 
       return res.status(200).json({
         success: true,
-        message: "Blog updated successfully",
+        message: "Blog updated successfully with Cloudinary images",
         data: blog,
       });
     } catch (error: any) {
@@ -114,33 +118,8 @@ export class BlogController {
   async deleteBlog(req: Request, res: Response) {
     try {
       const { id } = req.params;
-
-      // Optional: Fetch blog to delete images from Cloudinary
-      const blog = await blogRepo.getBlogById(Number(id));
-      if (blog) {
-        // Collect all public_ids from all items
-        const publicIds: string[] = [];
-        blog.items?.forEach((item: any) => {
-          if (Array.isArray(item.images)) {
-            item.images.forEach((url: string) => {
-              // Extract public_id from Cloudinary URL
-              const parts = url.split('/');
-              const fileWithExt = parts.pop();
-              const publicIdWithExt = fileWithExt?.split('.')[0];
-              if (publicIdWithExt) publicIds.push(publicIdWithExt);
-            });
-          }
-        });
-
-        // Delete from Cloudinary (optional - uncomment if needed)
-        // if (publicIds.length > 0) {
-        //   await cloudinary.api.delete_resources(publicIds, { resource_type: 'image' });
-        // }
-      }
-
       const deleted = await blogRepo.deleteBlog(Number(id));
       if (!deleted) return res.status(404).json({ success: false, message: "Blog not found" });
-
       return res.status(200).json({ success: true, message: "Blog deleted successfully" });
     } catch (error: any) {
       return res.status(500).json({ success: false, message: "Failed to delete blog", error: error.message });
@@ -156,21 +135,18 @@ export class BlogController {
       if (id) filters.id = Number(id);
 
       const blogs = await blogRepo.getAllBlogs(filters);
-
-      // Convert to plain objects
       const plainBlogs = blogs.map(blog => blog.get({ plain: true }));
 
-      const host = `${req.protocol}://${req.get("host")}`;
-
-      const withFullUrls = plainBlogs.map((blog: any) => {
+      // Cloudinary URLs are already full URLs, just clean them
+      const withCleanUrls = plainBlogs.map((blog: any) => {
         if (blog.items && Array.isArray(blog.items)) {
           blog.items = blog.items.map((item: any) => {
             let cleanImages: string[] = [];
 
             if (Array.isArray(item.images)) {
-              cleanImages = item.images
-                .filter((img: any) => typeof img === "string" && img.trim() !== "")
-                .map((img: string) => img.startsWith("http") ? img : `${host}${img}`);
+              cleanImages = item.images.filter((img: any) => {
+                return typeof img === "string" && img.trim() !== "";
+              });
             }
 
             return {
@@ -185,7 +161,7 @@ export class BlogController {
       return res.status(200).json({
         success: true,
         message: "List successfully",
-        data: withFullUrls,
+        data: withCleanUrls,
       });
     } catch (error: any) {
       console.error("Error in getAllBlogs:", error);
@@ -204,34 +180,27 @@ export class BlogController {
 
       const plainBlogs = [blog].map(blog => blog.get({ plain: true }));
 
-      const host = `${req.protocol}://${req.get("host")}`;
-
-      const withFullUrls = plainBlogs.map((blog: any) => {
+      const withCleanUrls = plainBlogs.map((blog: any) => {
         if (blog.items && Array.isArray(blog.items)) {
           blog.items = blog.items.map((item: any) => {
-            // FIX THE MAIN BUG: Clean invalid images
             let cleanImages: string[] = [];
 
             if (Array.isArray(item.images)) {
-              cleanImages = item.images
-                .filter((img: any) => {
-                  return typeof img === "string" && img.trim() !== "";
-                })
-                .map((img: string) =>
-                  img.startsWith("http") ? img : `${host}${img}`
-                );
+              cleanImages = item.images.filter((img: any) => {
+                return typeof img === "string" && img.trim() !== "";
+              });
             }
 
             return {
               ...item,
-              images: cleanImages, // ← Now always clean array of strings
+              images: cleanImages,
             };
           });
         }
         return blog;
       });
 
-      return res.status(200).json({ success: true, data: withFullUrls });
+      return res.status(200).json({ success: true, data: withCleanUrls });
     } catch (error: any) {
       return res.status(500).json({ success: false, message: "Failed to fetch blog", error: error.message });
     }
@@ -270,15 +239,12 @@ export class BlogController {
       return res.status(500).json({ success: false, message: "Failed to unpublish", error: error.message });
     }
   }
+
   async getCountries(req: Request, res: Response): Promise<any> {
     try {
       const response = await fetch("https://www.apicountries.com/countries");
-
-      // Convert body to JSON
       const data = await response.json();
-
       return res.status(200).json(data);
-
     } catch (error) {
       return res.status(500).json({
         success: false,
@@ -287,7 +253,6 @@ export class BlogController {
       });
     }
   }
-
 }
 
 export default new BlogController();
