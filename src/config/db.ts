@@ -9,7 +9,7 @@ dotenv.config();
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_PUBLIC_URL;
 
 if (!databaseUrl) {
   throw new Error(
@@ -17,18 +17,26 @@ if (!databaseUrl) {
   );
 }
 
-
 const sequelize = new Sequelize(databaseUrl, {
-  dialect: "postgres",
+  dialect: 'postgres',
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
   pool: {
     max: 5,
     min: 0,
-    idle: 10000,
-    acquire: 30000
-  }
+    acquire: 30000,
+    idle: 10000
+  },
+  define: {
+    underscored: true,
+    timestamps: true,
+  },
 });
-
 
 async function testConnection() {
   try {
