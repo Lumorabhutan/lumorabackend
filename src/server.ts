@@ -13,7 +13,7 @@ const app: Application = express();
 // ✅ Dynamic CORS configuration for hotspot/local network testing
 const corsOptions: CorsOptions = {
 
-  origin: allowedOrigin, // frontend origin
+  origin: '*', // frontend origin
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
 };

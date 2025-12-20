@@ -14,7 +14,7 @@ const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
 const app = (0, express_1.default)();
 // ✅ Dynamic CORS configuration for hotspot/local network testing
 const corsOptions = {
-    origin: allowedOrigin, // frontend origin
+    origin: '*', // frontend origin
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
 };
