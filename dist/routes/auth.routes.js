@@ -38,7 +38,7 @@ router.delete("/booking/:id", token_1.VERIFY_TOKEN, bookingController.deleteBook
 router.get("/booking/:email", bookingController.getBookingByEmail.bind(bookingController));
 //contact us routes can be added here similarly
 router.post("/contact", contactController.createContact.bind(contactController));
-router.get("/contact", token_1.VERIFY_TOKEN, contactController.getAllContacts.bind(contactController));
+router.get("/contact", contactController.getAllContacts.bind(contactController));
 router.get("/contact/:id", token_1.VERIFY_TOKEN, contactController.getContactById.bind(contactController));
 router.put("/contact/:id", token_1.VERIFY_TOKEN, contactController.updateContact.bind(contactController));
 router.delete("/contact/:id", token_1.VERIFY_TOKEN, contactController.deleteContact.bind(contactController));
