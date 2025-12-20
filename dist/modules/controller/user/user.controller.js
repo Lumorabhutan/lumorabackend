@@ -63,14 +63,14 @@ exports.UserController = {
             const isProd = process.env.NODE_ENV === "production";
             // Set cookies (HTTP Only, secure in production)
             res.cookie("accessToken", token.accessToken, {
-                httpOnly: true, // cannot be accessed by JS
+                httpOnly: false, // cannot be accessed by JS
                 secure: true, // only HTTPS in prod
                 sameSite: isProd ? "none" : "lax", // CSRF protection
                 maxAge: 1000 * 60 * 60 * 24, // 1 day
                 path: "/", // cookie accessible on all routes
             });
             res.cookie("refreshToken", token.refreshToken, {
-                httpOnly: true, // cannot be accessed by JS
+                httpOnly: false, // cannot be accessed by JS
                 secure: true, // only HTTPS in prod
                 sameSite: isProd ? "none" : "lax", // CSRF protection
                 // sameSite: "Strict",
