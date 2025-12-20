@@ -49,7 +49,7 @@ Review.init(
     sequelize,
     modelName: "Review",
     tableName: "Reviews",
-    timestamps: true,
+    timestamps: false,
   }
 );
 

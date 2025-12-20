@@ -27,7 +27,7 @@ OrderItem.init({
 }, {
     sequelize: db_1.default,
     tableName: "order_items",
-    timestamps: true,
+    timestamps: false,
 });
 exports.default = OrderItem;
 //# sourceMappingURL=OrderItem.model.js.map

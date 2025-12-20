@@ -85,7 +85,7 @@ BlogItem.init(
   {
     sequelize,
     tableName: "blog_items",
-    timestamps: true,
+    timestamps: false,
   }
 );
 

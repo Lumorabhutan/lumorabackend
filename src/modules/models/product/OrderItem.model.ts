@@ -36,7 +36,7 @@ OrderItem.init(
   {
     sequelize,
     tableName: "order_items",
-    timestamps: true,
+    timestamps: false,
   }
 );
 

@@ -31,7 +31,7 @@ Order.init({
 }, {
     sequelize: db_1.default,
     tableName: "orders",
-    timestamps: true,
+    timestamps: false,
 });
 // ✅ Define associations after both models are fully imported
 Order.hasMany(OrderItem_model_1.OrderItem, { foreignKey: "orderId", as: "items" });

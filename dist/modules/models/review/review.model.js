@@ -52,7 +52,7 @@ Review.init({
     sequelize: db_1.default,
     modelName: "Review",
     tableName: "Reviews",
-    timestamps: true,
+    timestamps: false,
 });
 exports.default = Review;
 //# sourceMappingURL=review.model.js.map

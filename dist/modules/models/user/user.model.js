@@ -36,7 +36,7 @@ User.init({
     sequelize: db_1.default,
     tableName: "Users",
     modelName: "User",
-    timestamps: true,
+    timestamps: false,
 });
 exports.default = User;
 //# sourceMappingURL=user.model.js.map

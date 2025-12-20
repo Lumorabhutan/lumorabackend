@@ -122,7 +122,7 @@ Booking.init(
     {
         sequelize,
         tableName: "bookings",
-        timestamps: true,
+        timestamps: false,
     }
 );
 

@@ -39,7 +39,7 @@ Blog.init({
 }, {
     sequelize: db_1.default,
     tableName: "blogs",
-    timestamps: true,
+    timestamps: false,
     indexes: [
         { fields: ["published_at"] },
         { fields: ["is_published"] },

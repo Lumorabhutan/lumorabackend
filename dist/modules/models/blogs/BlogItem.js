@@ -69,7 +69,7 @@ BlogItem.init({
 }, {
     sequelize: db_1.default,
     tableName: "blog_items",
-    timestamps: true,
+    timestamps: false,
 });
 exports.default = BlogItem;
 //# sourceMappingURL=BlogItem.js.map

@@ -91,7 +91,7 @@ Trip.init(
     sequelize,
     tableName: "Trips",
     modelName: "Trips",
-    timestamps: true,
+    timestamps: false,
   }
 );
 

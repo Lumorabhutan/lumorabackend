@@ -71,7 +71,7 @@ Trip.init({
     sequelize: db_1.default,
     tableName: "Trips",
     modelName: "Trips",
-    timestamps: true,
+    timestamps: false,
 });
 exports.default = Trip;
 //# sourceMappingURL=trips.model.js.map

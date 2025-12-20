@@ -102,7 +102,7 @@ Booking.init({
 }, {
     sequelize: db_1.default,
     tableName: "bookings",
-    timestamps: true,
+    timestamps: false,
 });
 // Relationships
 // Booking.belongsTo(User, { foreignKey: "userId", as: "user" });
