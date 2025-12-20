@@ -61,7 +61,7 @@ export const UserController = {
       // Set cookies (HTTP Only, secure in production)
       res.cookie("accessToken", token.accessToken, {
         httpOnly: true,      // cannot be accessed by JS
-        secure: isProd, // only HTTPS in prod
+        secure: true, // only HTTPS in prod
         sameSite: isProd ? "none" : "lax", // CSRF protection
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         path: "/",           // cookie accessible on all routes
@@ -69,7 +69,7 @@ export const UserController = {
 
       res.cookie("refreshToken", token.refreshToken, {
         httpOnly: true,      // cannot be accessed by JS
-        secure: isProd, // only HTTPS in prod
+        secure: true, // only HTTPS in prod
         sameSite: isProd ? "none" : "lax", // CSRF protection
         // sameSite: "Strict",
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
