@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon --watch src --ext ts,json --exec ts-node src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "npm run build && node dist/server.js",
     "migrate:all": "npx sequelize-cli db:migrate"
   },
   "keywords": [],
