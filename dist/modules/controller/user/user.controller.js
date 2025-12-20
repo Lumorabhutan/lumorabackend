@@ -65,14 +65,14 @@ exports.UserController = {
             res.cookie("accessToken", token.accessToken, {
                 httpOnly: false, // cannot be accessed by JS
                 secure: true, // only HTTPS in prod
-                sameSite: "lax", // CSRF protection
+                sameSite: "none", // CSRF protection
                 maxAge: 1000 * 60 * 60 * 24, // 1 day
                 path: "/", // cookie accessible on all routes
             });
             res.cookie("refreshToken", token.refreshToken, {
                 httpOnly: false, // cannot be accessed by JS
                 secure: true, // only HTTPS in prod
-                sameSite: "lax", // CSRF protection
+                sameSite: "none", // CSRF protection
                 // sameSite: "Strict",
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
                 path: "/",
