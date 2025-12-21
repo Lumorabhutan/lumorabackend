@@ -55,6 +55,8 @@ class UserService {
         const user = await userRepo.findByEmail(email);
         if (!user || !(await bcrypt_1.default.compare(password, user?.dataValues.password)))
             throw new Error("Invalid credentials");
+        if (user.dataValues.status.toLocaleLowerCase() !== "active")
+            throw new Error("User account is not active");
         const { accessToken, refreshToken } = await (0, token_1.ACCESS_TOKEN)({
             id: user.dataValues.id,
             name: user.dataValues.name,
