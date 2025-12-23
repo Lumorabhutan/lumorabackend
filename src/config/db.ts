@@ -9,7 +9,7 @@ dotenv.config();
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_PUBLIC_URL;
+const databaseUrl = process.env.DATABASE_PUBLIC_URL || "postgresql://postgres:uAsiPutgfzZUcMOwSbwMJVRNNcwmMQIy@shinkansen.proxy.rlwy.net:45270/railway";
 
 if (!databaseUrl) {
   throw new Error(

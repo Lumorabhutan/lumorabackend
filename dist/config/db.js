@@ -9,7 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 // db.ts or sequelize.ts
 dotenv_1.default.config();
-const databaseUrl = process.env.DATABASE_PUBLIC_URL;
+const databaseUrl = process.env.DATABASE_PUBLIC_URL || "postgresql://postgres:uAsiPutgfzZUcMOwSbwMJVRNNcwmMQIy@shinkansen.proxy.rlwy.net:45270/railway";
 if (!databaseUrl) {
     throw new Error('DATABASE_URL is missing. Make sure your Postgres plugin is in the same project and deployed.');
 }
