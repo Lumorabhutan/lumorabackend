@@ -24,7 +24,7 @@ export class MailService {
     to: string,
     subject: string,
     html: string,
-    fromEmail = "info@lumorabhutan.com"
+    fromEmail : string 
   ) {
     try {
       const data = await this.resend.emails.send({

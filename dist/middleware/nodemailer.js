@@ -22,7 +22,7 @@ class MailService {
      * @param html - email HTML content
      * @param fromEmail - sender email (default: info@lumorabhutan.com)
      */
-    async sendMail(to, subject, html, fromEmail = "info@lumorabhutan.com") {
+    async sendMail(to, subject, html, fromEmail) {
         try {
             const data = await this.resend.emails.send({
                 from: `Lumora <${fromEmail}>`,
