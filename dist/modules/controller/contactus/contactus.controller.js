@@ -17,7 +17,7 @@ class ContactController {
             });
         }
         catch (error) {
-            res.status(500).json({ error: "Failed to create contact" });
+            res.status(500).json({ error: "Failed to create contact" + error });
         }
     }
     async getAllContacts(req, res) {
