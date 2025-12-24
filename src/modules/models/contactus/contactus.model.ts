@@ -42,7 +42,7 @@ Contact.init(
     sequelize,
     modelName: "Contact",
     tableName: "Contacts",
-    timestamps: false,
+timestamps: true,
   }
 );
 
