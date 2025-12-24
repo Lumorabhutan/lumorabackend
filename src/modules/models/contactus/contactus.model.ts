@@ -43,6 +43,7 @@ Contact.init(
     modelName: "Contact",
     tableName: "Contacts",
 timestamps: true,
+underscored: false
   }
 );
 

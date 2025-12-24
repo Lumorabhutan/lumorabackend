@@ -44,6 +44,7 @@ Contact.init({
     modelName: "Contact",
     tableName: "Contacts",
     timestamps: true,
+    underscored: false
 });
 exports.default = Contact;
 //# sourceMappingURL=contactus.model.js.map
