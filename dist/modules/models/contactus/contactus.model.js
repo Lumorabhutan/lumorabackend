@@ -11,6 +11,8 @@ class Contact extends sequelize_1.Model {
     email;
     subject;
     message;
+    createdAt;
+    updatedAt;
 }
 Contact.init({
     id: {

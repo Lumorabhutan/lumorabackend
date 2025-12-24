@@ -7,6 +7,8 @@ class Contact extends Model {
   public email!: string;
   public subject!: string;
   public message!: string;
+   readonly createdAt!: Date;
+  readonly updatedAt!: Date;
 }
 
 Contact.init(
