@@ -55,8 +55,9 @@ class BookingHandler {
       <p>Remarks: ${bookingData.remarks ?? "None"}</p>
       <p>Thank you for booking with us.</p>
     `;
+        const bookingmail = bookingData.email ? 'info@lumorabhutan.com' : booking.email;
         // send email; rethrow if fails or handle as needed
-        await mailService.sendMail("bookings@travelagent.com", bookingData?.email, subject, html);
+        await mailService.sendMail("info@lumorabhutan.com", bookingmail, subject, html);
         return booking;
     }
     async deleteBooking(bookingId) {

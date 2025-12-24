@@ -1,39 +1,43 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 export class MailService {
-  private transporter;
+  private resend: Resend;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: Number(process.env.EMAIL_PORT) === 465, // SSL if 465
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not set in environment variables");
+    }
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   /**
    * Send an email
-   * @param fromEmail - sender email (dynamic)
    * @param to - recipient email
    * @param subject - email subject
    * @param html - email HTML content
+   * @param fromEmail - sender email (default: info@lumorabhutan.com)
    */
-  async sendMail(fromEmail: string, to?: string, subject?: string, html?: string) {
+  async sendMail(
+    to: string,
+    subject: string,
+    html: string,
+    fromEmail = "info@lumorabhutan.com"
+  ) {
     try {
-      const info = await this.transporter.sendMail({
-        from: `"Booking System" <${fromEmail}>`, // dynamic sender
+      const data = await this.resend.emails.send({
+        from: `Lumora <${fromEmail}>`,
         to,
         subject,
         html,
       });
+
+      console.log("✅ Email sent successfully", data);
+      return data;
     } catch (error) {
+      console.error("❌ Failed to send email:", error);
       throw error;
     }
   }
