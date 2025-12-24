@@ -55,11 +55,11 @@ export default class BookingHandler {
       <p>Remarks: ${bookingData.remarks ?? "None"}</p>
       <p>Thank you for booking with us.</p>
     `;
-    const bookingmail =  bookingData.email? 'info@lumorabhutan.com': booking.email;
+    const bookingmail =  bookingData.email? booking.email: 'info@lumorabhutan.com';
     // send email; rethrow if fails or handle as needed
     await mailService.sendMail("info@lumorabhutan.com", bookingmail, subject, html);
 
-    return booking;
+    return bookingmail;
   }
 
   async deleteBooking(bookingId: number) {
