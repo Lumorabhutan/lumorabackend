@@ -26,6 +26,11 @@ module.exports = {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
+         status: {  // Added status column
+        type: Sequelize.STRING(255),
+        allowNull: false,
+        defaultValue: 'Pending',
+      },
       total: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,

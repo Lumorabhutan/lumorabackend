@@ -31,7 +31,7 @@ class ProductHandler {
                 <p>Thank you for ordering with us.</p>
             `;
             // Send email
-            await mailService.sendMail("bookings@travelagent.com", customer.email, subject, html);
+            await mailService.sendMail("info@lumorabhutan.com", customer.email, subject, html);
             return { success: true, message: "Order created and email sent", data: response };
         }
         catch (error) {
