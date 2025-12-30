@@ -37,6 +37,7 @@ OrderItem.init(
     sequelize,
     tableName: "order_items",
     timestamps: false,
+    underscored: false,  // This makes all models use snake_case
   }
 );
 

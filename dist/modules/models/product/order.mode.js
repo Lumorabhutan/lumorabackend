@@ -32,6 +32,7 @@ Order.init({
     sequelize: db_1.default,
     tableName: "orders",
     timestamps: false,
+    underscored: false, // This makes all models use snake_case
 });
 // ✅ Define associations after both models are fully imported
 Order.hasMany(OrderItem_model_1.OrderItem, { foreignKey: "orderId", as: "items" });

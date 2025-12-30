@@ -28,6 +28,7 @@ OrderItem.init({
     sequelize: db_1.default,
     tableName: "order_items",
     timestamps: false,
+    underscored: false, // This makes all models use snake_case
 });
 exports.default = OrderItem;
 //# sourceMappingURL=OrderItem.model.js.map
