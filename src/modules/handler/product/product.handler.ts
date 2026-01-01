@@ -63,7 +63,6 @@ class ProductHandler {
       </ul>
 
       <p>
-        <strong>Subtotal:</strong> ${subtotal}<br />
         <strong>Total:</strong> ${total}<br />
         <strong>Status:</strong> Pending
       </p>
@@ -99,7 +98,6 @@ class ProductHandler {
       </ul>
 
       <p>
-        <strong>Subtotal:</strong> ${subtotal}<br />
         <strong>Total:</strong> ${total}<br />
         <strong>Status:</strong> Pending
       </p>
