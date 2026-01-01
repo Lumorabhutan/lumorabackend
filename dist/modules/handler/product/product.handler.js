@@ -24,7 +24,7 @@ class ProductHandler {
             const orderItemsHtml = item
                 .map((i) => `
           <li>
-            ${i.name} — Qty: ${i.quantity} — Price: ${i.price}
+            ${i.name} — Qty: ${i.quantity} — Price:$ ${i.price}
           </li>
         `)
                 .join("");
@@ -47,7 +47,7 @@ class ProductHandler {
       </ul>
 
       <p>
-        <strong>Total:</strong> ${total}<br />
+        <strong>Total:</strong>$ ${total}<br />
         <strong>Status:</strong> Pending
       </p>
 
@@ -81,7 +81,7 @@ class ProductHandler {
       </ul>
 
       <p>
-        <strong>Total:</strong> ${total}<br />
+        <strong>Total:</strong>$ ${total}<br />
         <strong>Status:</strong> Pending
       </p>
 
