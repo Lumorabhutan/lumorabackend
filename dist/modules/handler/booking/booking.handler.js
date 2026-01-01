@@ -13,28 +13,70 @@ class BookingHandler {
         if (!booking)
             throw new Error("Booking not found");
         const subject = "Your booking has been created";
-        const html = `
-    <h3>Booking Created</h3>
-    <p>Dear ${bookingData.name ?? "Customer"},</p>
-    <p>Your booking with Lumora Tour and Travel has been created. Please wait until it gets confirmed.</p>
-    <ul>
-      <li>Start Date: ${bookingData.travelStartDate}</li>
-      <li>End Date: ${bookingData.travelEndDate}</li>
-      <li>Status: Pending</li>
-      <li>Travelers: ${bookingData.numTravelers}</li>
-    </ul>
-    <p>Thank you for booking with us.</p>
-  `;
+        const customerHtml = `
+  <h3>Booking Received</h3>
+
+  <p>Dear ${bookingData.name ?? "Customer"},</p>
+
+  <p>
+    Thank you for booking with <strong>Lumora Tour and Travel</strong>.
+    Your booking has been successfully received and is currently
+    <strong>pending confirmation</strong>.
+  </p>
+
+  <ul>
+    <li><strong>Start Date:</strong> ${bookingData.travelStartDate}</li>
+    <li><strong>End Date:</strong> ${bookingData.travelEndDate}</li>
+    <li><strong>Travelers:</strong> ${bookingData.numTravelers}</li>
+    <li><strong>Status:</strong> Pending</li>
+  </ul>
+
+  <p>
+    We will notify you once your booking is confirmed.
+  </p>
+
+  <p>
+    Regards,<br />
+    <strong>Lumora Tour and Travel</strong>
+  </p>
+`;
+        const adminHtml = `
+  <h3>New Booking Created</h3>
+
+  <p>Hello Team,</p>
+
+  <p>
+    A new booking has been created and is awaiting confirmation.
+    Please review the details below:
+  </p>
+
+  <ul>
+    <li><strong>Customer Name:</strong> ${bookingData.name ?? "N/A"}</li>
+    <li><strong>Start Date:</strong> ${bookingData.travelStartDate}</li>
+    <li><strong>End Date:</strong> ${bookingData.travelEndDate}</li>
+    <li><strong>Travelers:</strong> ${bookingData.numTravelers}</li>
+    <li><strong>Status:</strong> Pending</li>
+  </ul>
+
+  <p>
+    Please take the necessary action to confirm or update the booking.
+  </p>
+
+  <p>
+    System Notification<br />
+    <strong>Lumora Tour and Travel</strong>
+  </p>
+`;
         // Send confirmation to customer
         await mailService.sendMail(bookingData.email, // recipient
         subject, // subject
-        html, // HTML content
+        customerHtml, // HTML content
         "info@lumorabhutan.com" // sender
         );
         // Optional: send notification to admin
         await mailService.sendMail("info@lumorabhutan.com", // recipient (admin)
         `New booking from ${bookingData.name ?? "Customer"}`, // subject
-        html, // same content
+        adminHtml, // same content
         "info@lumorabhutan.com" // sender
         );
         return booking;

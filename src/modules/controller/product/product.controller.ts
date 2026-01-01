@@ -182,9 +182,7 @@ class ProductController {
       }
 
       const order = await producthandler.CreateOrder(customer, items, subtotal, total);
-      if (!order.success) {
-        return res.status(400).json({ error: order.message });
-      }
+   
       return res.status(201).json({
         status: true,
         message: "Order created successfully",
