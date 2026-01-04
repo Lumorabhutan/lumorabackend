@@ -22,9 +22,13 @@ export class ReviewRepository {
     }
 
     async fetchReview(): Promise<Review[]> {
-        const response = await Review.findAll();
-        return response || null;
+        const reviews = await Review.findAll({
+            order: [['createdAt', 'DESC']],
+        });
+
+        return reviews;
     }
+
     async fetchActiveReview(): Promise<Review[] | null> {
         try {
             const reviews = await Review.findAll({

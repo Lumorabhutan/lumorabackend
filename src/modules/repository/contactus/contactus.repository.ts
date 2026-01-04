@@ -7,11 +7,14 @@ export default class ContactRepository {
     const contact = await Contact.create(contactData);
     return contact;
     }
-    async findAll() {
-        // Implementation for retrieving all contact entries
-    const contacts = await Contact.findAll();
-    return contacts;
-    }
+async findAll() {
+  const contacts = await Contact.findAll({
+    order: [['createdAt', 'DESC']],
+  });
+
+  return contacts;
+}
+
     async findById(contactId: number) {
         // Implementation for retrieving a contact entry by ID
     const contact = await Contact.findByPk(contactId);

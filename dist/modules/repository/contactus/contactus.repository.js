@@ -12,8 +12,9 @@ class ContactRepository {
         return contact;
     }
     async findAll() {
-        // Implementation for retrieving all contact entries
-        const contacts = await contactus_model_1.default.findAll();
+        const contacts = await contactus_model_1.default.findAll({
+            order: [['createdAt', 'DESC']],
+        });
         return contacts;
     }
     async findById(contactId) {

@@ -34,9 +34,13 @@ export default class BookingRepository {
         }
         return false;
     }
-    async findAll() {
-        const bookings = await Booking.findAll();
-        return bookings;
-    }
+async findAll() {
+  const bookings = await Booking.findAll({
+    order: [['createdAt', 'DESC']],
+  });
+
+  return bookings;
+}
+
 }
 

@@ -36,7 +36,9 @@ class BookingRepository {
         return false;
     }
     async findAll() {
-        const bookings = await booking_model_1.default.findAll();
+        const bookings = await booking_model_1.default.findAll({
+            order: [['createdAt', 'DESC']],
+        });
         return bookings;
     }
 }

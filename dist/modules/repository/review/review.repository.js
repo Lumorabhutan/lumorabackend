@@ -15,8 +15,10 @@ class ReviewRepository {
         return response;
     }
     async fetchReview() {
-        const response = await review_model_1.default.findAll();
-        return response || null;
+        const reviews = await review_model_1.default.findAll({
+            order: [['createdAt', 'DESC']],
+        });
+        return reviews;
     }
     async fetchActiveReview() {
         try {
