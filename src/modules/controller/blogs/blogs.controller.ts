@@ -55,65 +55,67 @@ export class BlogController {
     }
   }
 
-  async updateBlog(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const { category, is_published, published_at } = req.body;
+async updateBlog(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const { category, is_published, published_at } = req.body;
 
-      let items = typeof req.body.items === "string" 
-        ? JSON.parse(req.body.items) 
-        : req.body.items || [];
+    let items = typeof req.body.items === "string" 
+      ? JSON.parse(req.body.items) 
+      : req.body.items || [];
 
-      const uploadedFiles = req.files as Express.Multer.File[];
+    const uploadedFiles = req.files as Express.Multer.File[];
 
-      console.log("📤 Update - Files uploaded to Cloudinary:", uploadedFiles?.map(f => f.originalname));
-
-      if (uploadedFiles && uploadedFiles.length > 0) {
-        items = items.map((item: any, index: number) => {
-          const itemFiles = uploadedFiles.filter((file) => {
-            const match = file.fieldname.match(/items\[(\d+)\]\[images\]\[\]/);
-            return match && parseInt(match[1]) === index;
-          });
-
-          // CloudinaryStorage already uploaded - just get the URLs
-          const newImageUrls = itemFiles.map(file => (file as any).path);
-
-          console.log(`📸 Item ${index}: ${newImageUrls.length} new images from Cloudinary`);
-
-          return {
-            ...item,
-            images: newImageUrls.length > 0 ? newImageUrls : item.images || [],
-          };
-        });
-      }
-
-      const updateData: any = {
-        category,
-        is_published: is_published === "true",
-        published_at: published_at || null,
-        items,
-      };
-
-      const blog = await blogRepo.updateBlog(Number(id), updateData);
-
-      if (!blog) {
-        return res.status(404).json({ success: false, message: "Blog not found" });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Blog updated successfully with Cloudinary images",
-        data: blog,
-      });
-    } catch (error: any) {
-      console.error("Update blog error:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to update blog",
-        error: error.message,
-      });
+    // 1️⃣ Fetch existing blog from DB to preserve old images
+    const existingBlog = await blogRepo.getBlogById(Number(id));
+    if (!existingBlog) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
     }
+
+    console.log("📤 Update - Files uploaded to Cloudinary:", uploadedFiles?.map(f => f.originalname));
+
+    // 2️⃣ Merge new images with existing ones
+    items = items.map((item: any, index: number) => {
+      const itemFiles = uploadedFiles?.filter((file) => {
+        const match = file.fieldname.match(/items\[(\d+)\]\[images\]\[\]/);
+        return match && parseInt(match[1]) === index;
+      });
+
+      const newImageUrls = itemFiles?.map(file => (file as any).path) || [];
+
+      // Get existing images from DB if available
+      const existingImages = existingBlog.items?.[index]?.images || [];
+
+      return {
+        ...item,
+        images: newImageUrls.length > 0 ? newImageUrls : existingImages,
+      };
+    });
+
+    const updateData: any = {
+      category,
+      is_published: is_published === "true",
+      published_at: published_at || null,
+      items,
+    };
+
+    const blog = await blogRepo.updateBlog(Number(id), updateData);
+
+    return res.status(200).json({
+      success: true,
+      message: "Blog updated successfully with Cloudinary images",
+      data: blog,
+    });
+  } catch (error: any) {
+    console.error("Update blog error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update blog",
+      error: error.message,
+    });
   }
+}
+
 
   async deleteBlog(req: Request, res: Response) {
     try {
