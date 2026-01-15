@@ -140,18 +140,19 @@ async updateProduct(req: Request, res: Response) {
       });
     }
 
-    // ✅ Always create a new array (important)
+    // ✅ ALWAYS normalize before using
+    const existingImages = existingProduct.images;
+
     const images =
       newImageUrls.length > 0
         ? [...newImageUrls]
-        : [...existingProduct.images];
+        : [...existingImages];
 
     const data: CreateProductInput = {
       ...req.body,
-      images, // override images safely
+      images, // will be saved as JSON/string by repo
     };
 
-    // ✅ Recalculate final_price safely
     if (data.original_price || data.discount_percent) {
       const price = Number(
         data.original_price ?? existingProduct.original_price
@@ -161,11 +162,8 @@ async updateProduct(req: Request, res: Response) {
         data.discount_percent ?? existingProduct.discount_percent ?? 0
       );
 
-      const finalPrice =
-        price - (price * discount) / 100;
-
-      // ✅ Sequelize DECIMAL → string
-      data.final_price = finalPrice.toFixed(2);
+      const finalPrice = price - (price * discount) / 100;
+      data.final_price = finalPrice.toFixed(2); // Sequelize DECIMAL
     }
 
     const updatedProduct = await this.productRepo.update(Number(id), data);
@@ -183,6 +181,7 @@ async updateProduct(req: Request, res: Response) {
     });
   }
 }
+
 
 
 
