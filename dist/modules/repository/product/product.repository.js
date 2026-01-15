@@ -38,12 +38,30 @@ class ProductRepository {
         });
     }
     // UPDATE
+    // UPDATE PRODUCT
     async update(id, data, transaction) {
+        // 1️⃣ Find existing product
         const product = await this.findById(id);
         if (!product) {
             throw new Error("Product not found");
         }
+        // 2️⃣ Handle images safely
+        if (data.images) {
+            if (!Array.isArray(data.images)) {
+                throw new Error("Images must be an array of strings");
+            }
+        }
+        else {
+            // Prevent overwriting existing images if not provided
+            delete data.images;
+        }
+        // 3️⃣ Handle final_price (Sequelize DECIMAL expects string)
+        if (data.final_price !== undefined) {
+            data.final_price = String(data.final_price);
+        }
+        // 4️⃣ Update product
         await product.update(data, { transaction });
+        // 5️⃣ Reload to get latest state
         await product.reload();
         return product;
     }

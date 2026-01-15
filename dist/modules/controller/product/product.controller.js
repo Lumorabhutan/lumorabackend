@@ -110,45 +110,34 @@ class ProductController {
     async updateProduct(req, res) {
         try {
             const { id } = req.params;
-            const files = req.files;
-            const newImageUrls = files?.map(file => file.path) || [];
-            const existingProduct = await this.productRepo.findById(Number(id));
-            if (!existingProduct) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Product not found",
-                });
+            // Copy all incoming data
+            const productData = { ...req.body };
+            // ✅ Update images ONLY if new files are uploaded
+            if (Array.isArray(req.files) && req.files.length > 0) {
+                productData.images = req.files.map((file) => file.path // Cloudinary URL
+                );
             }
-            /* 🔒 Normalize images safely (CRITICAL FIX) */
-            let existingImages = [];
-            if (Array.isArray(existingProduct.images)) {
-                existingImages = existingProduct.images;
+            else {
+                // Prevent overwriting existing images
+                delete productData.images;
             }
-            else if (typeof existingProduct.images === "string") {
-                try {
-                    const parsed = JSON.parse(existingProduct.images);
-                    existingImages = Array.isArray(parsed) ? parsed : [];
+            // ✅ Recalculate final_price if original_price or discount_percent is present
+            if (productData.original_price || productData.discount_percent) {
+                const existingProduct = await this.productRepo.findById(Number(id));
+                if (!existingProduct) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Product not found",
+                    });
                 }
-                catch {
-                    existingImages = [];
-                }
-            }
-            const images = newImageUrls.length > 0
-                ? [...newImageUrls]
-                : [...existingImages];
-            const data = {
-                ...req.body,
-                images, // always safe array
-            };
-            /* ✅ Recalculate final_price (Sequelize DECIMAL = string) */
-            if (data.original_price || data.discount_percent) {
-                const price = Number(data.original_price ?? existingProduct.original_price);
-                const discount = Number(data.discount_percent ?? existingProduct.discount_percent ?? 0);
+                const price = Number(productData.original_price ?? existingProduct.original_price);
+                const discount = Number(productData.discount_percent ?? existingProduct.discount_percent ?? 0);
                 const finalPrice = price - (price * discount) / 100;
-                // IMPORTANT: Sequelize DECIMAL expects string
-                data.final_price = finalPrice.toFixed(2);
+                // ✅ Sequelize DECIMAL expects string
+                productData.final_price = finalPrice.toFixed(2);
             }
-            const updatedProduct = await this.productRepo.update(Number(id), data);
+            // ✅ Update product
+            const updatedProduct = await this.productRepo.update(Number(id), productData);
             return res.json({
                 success: true,
                 message: "Product updated successfully",
@@ -159,7 +148,7 @@ class ProductController {
             console.error("Error updating product:", error);
             return res.status(500).json({
                 success: false,
-                message: error.message,
+                message: error.message || "An error occurred",
             });
         }
     }
