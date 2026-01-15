@@ -12,7 +12,7 @@ export interface CreateProductInput {
   original_price: number;
   discount_percent?: number; // optional
   description?: string | null;
-  final_price: string;
+  final_price: number;
   images?: string[];
 }
 
