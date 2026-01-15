@@ -131,14 +131,20 @@ async updateProduct(req: Request, res: Response) {
     const product = await this.productRepo.findById(Number(id));
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    // Get new uploaded images
     const files = req.files as Express.Multer.File[] | undefined;
     const newImageUrls = files?.map(file => file.path) || [];
 
-    // Merge old images with new images
-    const updatedImages = [ ...newImageUrls];
+    // ✅ Safely parse old images
+    const oldImages = Array.isArray(product.images)
+      ? product.images
+      : product.images
+        ? JSON.parse(product.images)
+        : [];
 
-    // Prepare data for update
+    // Merge old + new images
+    const updatedImages = [...oldImages, ...newImageUrls];
+
+    // Prepare update data
     const data: CreateProductInput = {
       ...req.body,
       images: updatedImages,
@@ -149,7 +155,6 @@ async updateProduct(req: Request, res: Response) {
       const final_price =
         (data.original_price ?? product.original_price) -
         ((data.original_price ?? product.original_price) * (data.discount_percent ?? product.discount_percent) / 100);
-
       (data as any).final_price = final_price;
     }
 
@@ -160,6 +165,7 @@ async updateProduct(req: Request, res: Response) {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
 
 
   // DELETE PRODUCT (unchanged, but you could add Cloudinary deletion later)

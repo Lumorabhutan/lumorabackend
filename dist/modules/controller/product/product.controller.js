@@ -113,12 +113,17 @@ class ProductController {
             const product = await this.productRepo.findById(Number(id));
             if (!product)
                 return res.status(404).json({ success: false, message: "Product not found" });
-            // Get new uploaded images
             const files = req.files;
             const newImageUrls = files?.map(file => file.path) || [];
-            // Merge old images with new images
-            const updatedImages = [...newImageUrls];
-            // Prepare data for update
+            // ✅ Safely parse old images
+            const oldImages = Array.isArray(product.images)
+                ? product.images
+                : product.images
+                    ? JSON.parse(product.images)
+                    : [];
+            // Merge old + new images
+            const updatedImages = [...oldImages, ...newImageUrls];
+            // Prepare update data
             const data = {
                 ...req.body,
                 images: updatedImages,
