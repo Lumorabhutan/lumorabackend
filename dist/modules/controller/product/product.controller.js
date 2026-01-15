@@ -117,7 +117,7 @@ class ProductController {
             const files = req.files;
             const newImageUrls = files?.map(file => file.path) || [];
             // Merge old images with new images
-            const updatedImages = [...(product.images || []), ...newImageUrls];
+            const updatedImages = [...newImageUrls];
             // Prepare data for update
             const data = {
                 ...req.body,

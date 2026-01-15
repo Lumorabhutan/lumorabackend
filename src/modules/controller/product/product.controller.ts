@@ -136,7 +136,7 @@ async updateProduct(req: Request, res: Response) {
     const newImageUrls = files?.map(file => file.path) || [];
 
     // Merge old images with new images
-    const updatedImages = [...(product.images || []), ...newImageUrls];
+    const updatedImages = [ ...newImageUrls];
 
     // Prepare data for update
     const data: CreateProductInput = {
