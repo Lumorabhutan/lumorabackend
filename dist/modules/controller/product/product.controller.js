@@ -119,20 +119,34 @@ class ProductController {
                     message: "Product not found",
                 });
             }
-            // ✅ ALWAYS normalize before using
-            const existingImages = existingProduct.images;
+            /* 🔒 Normalize images safely (CRITICAL FIX) */
+            let existingImages = [];
+            if (Array.isArray(existingProduct.images)) {
+                existingImages = existingProduct.images;
+            }
+            else if (typeof existingProduct.images === "string") {
+                try {
+                    const parsed = JSON.parse(existingProduct.images);
+                    existingImages = Array.isArray(parsed) ? parsed : [];
+                }
+                catch {
+                    existingImages = [];
+                }
+            }
             const images = newImageUrls.length > 0
                 ? [...newImageUrls]
                 : [...existingImages];
             const data = {
                 ...req.body,
-                images, // will be saved as JSON/string by repo
+                images, // always safe array
             };
+            /* ✅ Recalculate final_price (Sequelize DECIMAL = string) */
             if (data.original_price || data.discount_percent) {
                 const price = Number(data.original_price ?? existingProduct.original_price);
                 const discount = Number(data.discount_percent ?? existingProduct.discount_percent ?? 0);
                 const finalPrice = price - (price * discount) / 100;
-                data.final_price = finalPrice;
+                // IMPORTANT: Sequelize DECIMAL expects string
+                data.final_price = finalPrice.toFixed(2);
             }
             const updatedProduct = await this.productRepo.update(Number(id), data);
             return res.json({

@@ -7,7 +7,7 @@ interface ProductAttributes {
   product_name: string;
   original_price: number;
   discount_percent: number;
-  final_price: number;
+  final_price:string| number;
   description?: string | null;
   images: (string | null)[]; // allow nulls
 }
@@ -27,7 +27,7 @@ export class Product
   public product_name!: string;
   public original_price!: number;
   public discount_percent!: number;
-  public final_price!: number;
+  public final_price!: string| number;
   public description?: string | null;
   public images!: string[];
 
