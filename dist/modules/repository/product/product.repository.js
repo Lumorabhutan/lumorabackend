@@ -43,9 +43,17 @@ class ProductRepository {
         if (!product) {
             throw new Error("Product not found");
         }
+        // Ensure images is an array if provided
+        if (data.images) {
+            data.images = Array.isArray(data.images) ? data.images : [];
+        }
+        // Update product
         await product.update(data, { transaction });
         await product.reload();
-        return product;
+        // Make sure images returned as array
+        const updatedProduct = product.toJSON();
+        updatedProduct.images = Array.isArray(updatedProduct.images) ? updatedProduct.images : [];
+        return updatedProduct;
     }
     // DELETE
     async delete(id, transaction) {

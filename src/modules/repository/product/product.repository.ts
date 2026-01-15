@@ -87,20 +87,31 @@ class ProductRepository {
   }
 
   // UPDATE
-  async update(
-    id: number,
-    data: UpdateProductInput,
-    transaction?: Transaction
-  ): Promise<Product> {
-    const product = await this.findById(id);
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    await product.update(data, { transaction });
-    await product.reload();
-    return product;
+async update(
+  id: number,
+  data: UpdateProductInput,
+  transaction?: Transaction
+): Promise<Product> {
+  const product = await this.findById(id);
+  if (!product) {
+    throw new Error("Product not found");
   }
+
+  // Ensure images is an array if provided
+  if (data.images) {
+    data.images = Array.isArray(data.images) ? data.images : [];
+  }
+
+  // Update product
+  await product.update(data, { transaction });
+  await product.reload();
+
+  // Make sure images returned as array
+  const updatedProduct = product.toJSON();
+  updatedProduct.images = Array.isArray(updatedProduct.images) ? updatedProduct.images : [];
+
+  return updatedProduct as Product;
+}
 
   // DELETE
   async delete(id: number, transaction?: Transaction): Promise<Product> {
