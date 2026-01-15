@@ -110,20 +110,21 @@ class ProductController {
     async updateProduct(req, res) {
         try {
             const { id } = req.params;
-            // ✅ Cloudinary uploads → get secure URLs
+            const product = await this.productRepo.findById(Number(id));
+            if (!product)
+                return res.status(404).json({ success: false, message: "Product not found" });
+            // Get new uploaded images
             const files = req.files;
-            const imageUrls = files?.map((file) => file.path // ← Cloudinary secure_url
-            ) || [];
-            // Prepare data (same as before)
+            const newImageUrls = files?.map(file => file.path) || [];
+            // Merge old images with new images
+            const updatedImages = [...(product.images || []), ...newImageUrls];
+            // Prepare data for update
             const data = {
                 ...req.body,
-                images: imageUrls,
+                images: updatedImages,
             };
-            // Recalculate final_price if original_price or discount_percent is updated (unchanged)
+            // Recalculate final_price if needed
             if (data.original_price || data.discount_percent) {
-                const product = await this.productRepo.findById(Number(id));
-                if (!product)
-                    return res.status(404).json({ success: false, message: "Product not found" });
                 const final_price = (data.original_price ?? product.original_price) -
                     ((data.original_price ?? product.original_price) * (data.discount_percent ?? product.discount_percent) / 100);
                 data.final_price = final_price;
