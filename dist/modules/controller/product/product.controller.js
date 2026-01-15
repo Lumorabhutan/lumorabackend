@@ -104,26 +104,18 @@ class ProductController {
             });
         }
     }
-    /**
-     * @desc Update product
-     */
     async updateProduct(req, res) {
         try {
             const { id } = req.params;
             const product = await this.productRepo.findById(Number(id));
             if (!product)
                 return res.status(404).json({ success: false, message: "Product not found" });
+            // Cloudinary uploaded files
             const files = req.files;
             const newImageUrls = files?.map(file => file.path) || [];
-            // ✅ Safely parse old images
-            const oldImages = Array.isArray(product.images)
-                ? product.images
-                : product.images
-                    ? JSON.parse(product.images)
-                    : [];
             // Merge old + new images
+            const oldImages = Array.isArray(product.images) ? product.images : [];
             const updatedImages = [...oldImages, ...newImageUrls];
-            // Prepare update data
             const data = {
                 ...req.body,
                 images: updatedImages,
@@ -135,7 +127,11 @@ class ProductController {
                 data.final_price = final_price;
             }
             const updatedProduct = await this.productRepo.update(Number(id), data);
-            res.json({ success: true, message: "Product updated successfully", product: updatedProduct });
+            res.json({
+                success: true,
+                message: "Product updated successfully",
+                product: updatedProduct,
+            });
         }
         catch (error) {
             console.error("Error updating product:", error);
