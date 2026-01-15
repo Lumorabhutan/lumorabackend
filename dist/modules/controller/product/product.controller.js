@@ -93,7 +93,7 @@ class ProductController {
                 return;
             }
             // (unchanged: no image processing, just success)
-            res.json({ success: true });
+            res.json({ success: true, product });
         }
         catch (error) {
             console.error("❌ Error fetching product:", error);
