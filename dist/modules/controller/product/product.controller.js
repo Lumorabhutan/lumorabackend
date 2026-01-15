@@ -112,10 +112,12 @@ class ProductController {
                 return res.status(404).json({ success: false, message: "Product not found" });
             // Cloudinary uploaded files
             const files = req.files;
-            const newImageUrls = files?.map(file => file.path) || [];
-            // Merge old + new images
-            const oldImages = Array.isArray(product.images) ? product.images : [];
-            const updatedImages = [...oldImages, ...newImageUrls];
+            const imageUrls = files?.map(file => file.path);
+            // If new images are uploaded, merge with old ones; otherwise keep old images
+            const updatedImages = imageUrls && imageUrls.length > 0
+                ? [...(Array.isArray(product.images) ? product.images : []), ...imageUrls]
+                : Array.isArray(product.images) ? product.images : [];
+            // Prepare update data
             const data = {
                 ...req.body,
                 images: updatedImages,

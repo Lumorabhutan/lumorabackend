@@ -18,7 +18,7 @@ const allowedOrigins = [
     "https://travel-agent-olive.vercel.app", // Your Vercel frontend
     "https://www.lumorabhutan.com", // Production domain
     "https://lumorabhutan.com", // Without www
-    "http://localhost:3000", // Local development
+    "*", // Local development
     // Add preview URLs if needed, e.g.:
     // "https://travel-agent-olive-git-main-yourusername.vercel.app"
 ];

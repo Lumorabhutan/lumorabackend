@@ -59,7 +59,7 @@ router.get("/fetchActiveReview", reviewController.fetchReview.bind(reviewControl
 router.post("/products", product_controller_1.default.upload, productController.createProduct.bind(productController));
 router.get("/products", productController.getAllProducts.bind(productController));
 router.get("/products/:id", productController.getProductById.bind(productController));
-router.put("/products/:id", productController.updateProduct.bind(productController));
+router.put("/products/:id", product_controller_1.default.upload, productController.updateProduct.bind(productController));
 router.delete("/products/:id", productController.deleteProduct.bind(productController));
 router.post("/orders", productController.createOrder.bind(productController));
 router.get("/orders", productController.getOrders.bind(productController)); // GET all orders
