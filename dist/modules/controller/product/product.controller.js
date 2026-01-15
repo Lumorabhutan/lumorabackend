@@ -110,30 +110,43 @@ class ProductController {
     async updateProduct(req, res) {
         try {
             const { id } = req.params;
-            // ✅ Cloudinary uploads → get secure URLs
             const files = req.files;
-            const imageUrls = files?.map((file) => file.path // ← Cloudinary secure_url
-            ) || [];
-            // Prepare data (same as before)
+            const newImageUrls = files?.map(file => file.path) || [];
+            const existingProduct = await this.productRepo.findById(Number(id));
+            if (!existingProduct) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Product not found",
+                });
+            }
+            // ✅ ALWAYS normalize before using
+            const existingImages = existingProduct.images;
+            const images = newImageUrls.length > 0
+                ? [...newImageUrls]
+                : [...existingImages];
             const data = {
                 ...req.body,
-                images: imageUrls,
+                images, // will be saved as JSON/string by repo
             };
-            // Recalculate final_price if original_price or discount_percent is updated (unchanged)
             if (data.original_price || data.discount_percent) {
-                const product = await this.productRepo.findById(Number(id));
-                if (!product)
-                    return res.status(404).json({ success: false, message: "Product not found" });
-                const final_price = (data.original_price ?? product.original_price) -
-                    ((data.original_price ?? product.original_price) * (data.discount_percent ?? product.discount_percent) / 100);
-                data.final_price = final_price;
+                const price = Number(data.original_price ?? existingProduct.original_price);
+                const discount = Number(data.discount_percent ?? existingProduct.discount_percent ?? 0);
+                const finalPrice = price - (price * discount) / 100;
+                data.final_price = finalPrice;
             }
             const updatedProduct = await this.productRepo.update(Number(id), data);
-            res.json({ success: true, message: "Product updated successfully", product: updatedProduct });
+            return res.json({
+                success: true,
+                message: "Product updated successfully",
+                product: updatedProduct,
+            });
         }
         catch (error) {
             console.error("Error updating product:", error);
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+            });
         }
     }
     // DELETE PRODUCT (unchanged, but you could add Cloudinary deletion later)

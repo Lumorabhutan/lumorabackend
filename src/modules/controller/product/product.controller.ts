@@ -163,7 +163,7 @@ async updateProduct(req: Request, res: Response) {
       );
 
       const finalPrice = price - (price * discount) / 100;
-      data.final_price = finalPrice.toFixed(2); // Sequelize DECIMAL
+      data.final_price = finalPrice;
     }
 
     const updatedProduct = await this.productRepo.update(Number(id), data);
