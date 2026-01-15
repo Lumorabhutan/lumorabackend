@@ -125,62 +125,42 @@ class ProductController {
   /**
    * @desc Update product
    */
-async updateProduct(req: Request, res: Response): Promise<any> {
-  try {
-    const { id } = req.params;
+ async updateProduct(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
 
-    // Copy all incoming data
-    const productData: any = { ...req.body };
+      // ✅ Cloudinary uploads → get secure URLs
+      const files = req.files as Express.Multer.File[] | undefined;
+      const imageUrls = files?.map(
+        (file) => file.path  // ← Cloudinary secure_url
+      ) || [];
 
-    // ✅ Update images ONLY if new files are uploaded
-    if (Array.isArray(req.files) && req.files.length > 0) {
-      productData.images = req.files.map(
-        (file: any) => file.path // Cloudinary URL
-      );
-    } else {
-      // Prevent overwriting existing images
-      delete productData.images;
-    }
+      // Prepare data (same as before)
+      const data: CreateProductInput = {
+        ...req.body,
+        images: imageUrls,
+      };
 
-    // ✅ Recalculate final_price if original_price or discount_percent is present
-    if (productData.original_price || productData.discount_percent) {
-      const existingProduct = await this.productRepo.findById(Number(id));
-      if (!existingProduct) {
-        return res.status(404).json({
-          success: false,
-          message: "Product not found",
-        });
+      // Recalculate final_price if original_price or discount_percent is updated (unchanged)
+      if (data.original_price || data.discount_percent) {
+        const product = await this.productRepo.findById(Number(id));
+        if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+        const final_price = (data.original_price ?? product.original_price) -
+          ((data.original_price ?? product.original_price) * (data.discount_percent ?? product.discount_percent) / 100);
+
+        (data as any).final_price = final_price;
       }
 
-      const price = Number(
-        productData.original_price ?? existingProduct.original_price
-      );
-      const discount = Number(
-        productData.discount_percent ?? existingProduct.discount_percent ?? 0
-      );
-
-      const finalPrice = price - (price * discount) / 100;
-
-      // ✅ Sequelize DECIMAL expects string
-      productData.final_price = finalPrice.toFixed(2);
+      const updatedProduct = await this.productRepo.update(Number(id), data);
+      res.json({ success: true, message: "Product updated successfully", product: updatedProduct });
+    } catch (error: any) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ success: false, message: error.message });
     }
-
-    // ✅ Update product
-    const updatedProduct = await this.productRepo.update(Number(id), productData);
-
-    return res.json({
-      success: true,
-      message: "Product updated successfully",
-      product: updatedProduct,
-    });
-  } catch (error: any) {
-    console.error("Error updating product:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "An error occurred",
-    });
   }
-}
+
+
 
 
 

@@ -110,46 +110,30 @@ class ProductController {
     async updateProduct(req, res) {
         try {
             const { id } = req.params;
-            // Copy all incoming data
-            const productData = { ...req.body };
-            // ✅ Update images ONLY if new files are uploaded
-            if (Array.isArray(req.files) && req.files.length > 0) {
-                productData.images = req.files.map((file) => file.path // Cloudinary URL
-                );
+            // ✅ Cloudinary uploads → get secure URLs
+            const files = req.files;
+            const imageUrls = files?.map((file) => file.path // ← Cloudinary secure_url
+            ) || [];
+            // Prepare data (same as before)
+            const data = {
+                ...req.body,
+                images: imageUrls,
+            };
+            // Recalculate final_price if original_price or discount_percent is updated (unchanged)
+            if (data.original_price || data.discount_percent) {
+                const product = await this.productRepo.findById(Number(id));
+                if (!product)
+                    return res.status(404).json({ success: false, message: "Product not found" });
+                const final_price = (data.original_price ?? product.original_price) -
+                    ((data.original_price ?? product.original_price) * (data.discount_percent ?? product.discount_percent) / 100);
+                data.final_price = final_price;
             }
-            else {
-                // Prevent overwriting existing images
-                delete productData.images;
-            }
-            // ✅ Recalculate final_price if original_price or discount_percent is present
-            if (productData.original_price || productData.discount_percent) {
-                const existingProduct = await this.productRepo.findById(Number(id));
-                if (!existingProduct) {
-                    return res.status(404).json({
-                        success: false,
-                        message: "Product not found",
-                    });
-                }
-                const price = Number(productData.original_price ?? existingProduct.original_price);
-                const discount = Number(productData.discount_percent ?? existingProduct.discount_percent ?? 0);
-                const finalPrice = price - (price * discount) / 100;
-                // ✅ Sequelize DECIMAL expects string
-                productData.final_price = finalPrice.toFixed(2);
-            }
-            // ✅ Update product
-            const updatedProduct = await this.productRepo.update(Number(id), productData);
-            return res.json({
-                success: true,
-                message: "Product updated successfully",
-                product: updatedProduct,
-            });
+            const updatedProduct = await this.productRepo.update(Number(id), data);
+            res.json({ success: true, message: "Product updated successfully", product: updatedProduct });
         }
         catch (error) {
             console.error("Error updating product:", error);
-            return res.status(500).json({
-                success: false,
-                message: error.message || "An error occurred",
-            });
+            res.status(500).json({ success: false, message: error.message });
         }
     }
     // DELETE PRODUCT (unchanged, but you could add Cloudinary deletion later)
