@@ -125,38 +125,47 @@ class ProductController {
   /**
    * @desc Update product
    */
- async updateProduct(req: Request, res: Response) {
+async updateProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
 
-    // ✅ Cloudinary uploads → get secure URLs
     const files = req.files as Express.Multer.File[] | undefined;
     const newImageUrls = files?.map(file => file.path) || [];
 
-    // ✅ Fetch existing product to preserve old images
     const existingProduct = await this.productRepo.findById(Number(id));
     if (!existingProduct) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
-    // Merge images: use new ones if uploaded, otherwise keep existing
-    const images = newImageUrls.length > 0 ? newImageUrls : existingProduct.images;
+    // ✅ Always create a new array (important)
+    const images =
+      newImageUrls.length > 0
+        ? [...newImageUrls]
+        : [...existingProduct.images];
 
-    // Prepare data
     const data: CreateProductInput = {
       ...req.body,
-      images,
+      images, // override images safely
     };
 
-    // Recalculate final_price if original_price or discount_percent is updated
+    // ✅ Recalculate final_price safely
     if (data.original_price || data.discount_percent) {
-      const final_price =
-        (data.original_price ?? existingProduct.original_price) -
-        ((data.original_price ?? existingProduct.original_price) *
-          (data.discount_percent ?? existingProduct.discount_percent) /
-          100);
+      const price = Number(
+        data.original_price ?? existingProduct.original_price
+      );
 
-      (data as any).final_price = final_price;
+      const discount = Number(
+        data.discount_percent ?? existingProduct.discount_percent ?? 0
+      );
+
+      const finalPrice =
+        price - (price * discount) / 100;
+
+      // ✅ Sequelize DECIMAL → string
+      data.final_price = finalPrice.toFixed(2);
     }
 
     const updatedProduct = await this.productRepo.update(Number(id), data);
@@ -168,9 +177,13 @@ class ProductController {
     });
   } catch (error: any) {
     console.error("Error updating product:", error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 }
+
 
 
   // DELETE PRODUCT (unchanged, but you could add Cloudinary deletion later)
