@@ -93,7 +93,7 @@ class ProductController {
                 return;
             }
             // (unchanged: no image processing, just success)
-            res.json({ success: true, product });
+            res.json({ success: true });
         }
         catch (error) {
             console.error("❌ Error fetching product:", error);
@@ -156,6 +156,9 @@ class ProductController {
                 return res.status(400).json({ error: "Missing required fields" });
             }
             const order = await producthandler.CreateOrder(customer, items, subtotal, total);
+            if (!order.success) {
+                return res.status(400).json({ error: order.message });
+            }
             return res.status(201).json({
                 status: true,
                 message: "Order created successfully",

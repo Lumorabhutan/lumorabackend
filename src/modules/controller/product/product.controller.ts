@@ -111,7 +111,7 @@ class ProductController {
       }
 
       // (unchanged: no image processing, just success)
-      res.json({ success: true, product });
+      res.json({ success: true });
     } catch (error: any) {
       console.error("❌ Error fetching product:", error);
       res.status(500).json({
@@ -125,7 +125,7 @@ class ProductController {
   /**
    * @desc Update product
    */
- async updateProduct(req: Request, res: Response) {
+  async updateProduct(req: Request, res: Response) {
     try {
       const { id } = req.params;
 
@@ -160,12 +160,6 @@ class ProductController {
     }
   }
 
-
-
-
-
-
-
   // DELETE PRODUCT (unchanged, but you could add Cloudinary deletion later)
   async deleteProduct(req: Request, res: Response) {
     try {
@@ -188,7 +182,9 @@ class ProductController {
       }
 
       const order = await producthandler.CreateOrder(customer, items, subtotal, total);
-   
+      if (!order.success) {
+        return res.status(400).json({ error: order.message });
+      }
       return res.status(201).json({
         status: true,
         message: "Order created successfully",

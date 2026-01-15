@@ -75,7 +75,7 @@ class ProductRepository {
                 name: customer.name,
                 email: customer.email,
                 phone: customer.phone,
-                status: 'Pending',
+                status: customer.status,
                 subtotal,
                 total,
                 items: items.map((item) => ({
